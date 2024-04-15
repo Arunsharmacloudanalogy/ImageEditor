@@ -125,6 +125,50 @@ function App() {
       reader.readAsDataURL(file);
     }
   }
+  function downloadImage() {
+    if (image) {
+      const img = new Image();
+      img.onload = function () {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        const rotation = options.find(
+          (option) => option.property === "rotate"
+        ).value;
+
+        const width =
+          Math.abs(Math.cos((rotation * Math.PI) / 180) * img.width) +
+          Math.abs(Math.sin((rotation * Math.PI) / 180) * img.height);
+        const height =
+          Math.abs(Math.sin((rotation * Math.PI) / 180) * img.width) +
+          Math.abs(Math.cos((rotation * Math.PI) / 180) * img.height);
+        canvas.width = width;
+        canvas.height = height;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate((rotation * Math.PI) / 180);
+        ctx.drawImage(img, -img.width / 2, -img.height / 2);
+
+        const dataUrl = canvas.toDataURL("image/png");
+
+        const link = document.createElement("a");
+        link.href = dataUrl;
+        link.download = "edited_image.png";
+
+        document.body.appendChild(link);
+
+        // Trigger the download
+        link.click();
+
+        document.body.removeChild(link);
+      };
+      img.src = image;
+    }
+  }
+
   return (
     <div className="w-screen flex flex-col h-screen mt-10">
       <div className="main-image h-[60%] w-[100%] flex justify-center items-center overflow-hidden">
@@ -158,6 +202,7 @@ function App() {
       <div className="flex items-center justify-center w-full mx-auto">
         <input type="file" accept="image/*" onChange={handleImageChange} />
       </div>
+      {image && <button onClick={downloadImage}>Download Image</button>}
     </div>
   );
 }
