@@ -88,18 +88,31 @@ function App() {
   const [options, setOptions] = useState(DEFAULT_OPTIONS);
   const selectedOption = options[selectedOptionIndex];
   const [image, setImage] = useState("");
+  const [history, setHistory] = useState([]);
+
+  function handleBackButtonClick() {
+    if (history.length > 0) {
+      console.log(history);
+      const previousOptions = history.pop();
+      setOptions(previousOptions);
+      setHistory(history.slice(0, -1)); 
+    }
+  }
 
   function handleSliderChange(event) {
-    const value = event.target.value;
-    // Update only the currently selected option
-    setOptions((currentOptions) =>
-      currentOptions.map((option, index) => {
+    const value = parseInt(event.target.value, 10);  
+
+    
+    setOptions((currentOptions) => {
+      setHistory((prevHistory) => [...prevHistory, currentOptions]);
+
+      return currentOptions.map((option, index) => {
         if (index === selectedOptionIndex) {
           return { ...option, value: value };
         }
         return option;
-      })
-    );
+      });
+    });
   }
 
   function getImageStyle() {
@@ -203,6 +216,7 @@ function App() {
         <input type="file" accept="image/*" onChange={handleImageChange} />
       </div>
       {image && <button onClick={downloadImage}>Download Image</button>}
+      <button onClick={handleBackButtonClick}>Back</button>
     </div>
   );
 }
